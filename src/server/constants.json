@@ -1,0 +1,12 @@
+{
+  "PASSPHRASE": "QuickTalkJS.Server",
+  "ENCRYPTION_VERIFICATION_LEN": 16,
+  "USER_ID": {
+    "MIN_LENGTH": 2,
+    "MAX_LENGTH": 16,
+    "DICT": "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM-.!@#$%^&*()1234567890"
+  },
+  "PATHS": {
+    "REQUEST_HANDLERS": "/home/matt/repos/quicktalkjs/src/server/request-handlers/"
+  }
+}
