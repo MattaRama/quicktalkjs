@@ -6,6 +6,7 @@
     "MAX_LENGTH": 16,
     "DICT": "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM-.!@#$%^&*()1234567890"
   },
+  "MAX_KEY_GEN_ATTEMPTS": 5,
   "PATHS": {
     "REQUEST_HANDLERS": "/home/matt/repos/quicktalkjs/src/server/request-handlers/"
   }

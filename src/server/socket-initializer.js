@@ -2,7 +2,7 @@ const { Socket } = require('net');
 const Server = require('./server');
 const EncryptionManager = require('../encryption-manager');
 const crypto = require('crypto');
-const { ENCRYPTION_VERIFICATION_LEN, USER_ID } = require('./constants.json');
+const { ENCRYPTION_VERIFICATION_LEN, USER_ID, MAX_KEY_GEN_ATTEMPTS } = require('./constants.json');
 const User = require('./user');
 
 class SocketInitializer {
@@ -56,10 +56,12 @@ class SocketInitializer {
           this.socket.end();
         }
 
-        while (this.remotePublicKey == null) {
+        for (var i = 0; i < MAX_KEY_GEN_ATTEMPTS && this.remotePublicKey == null; i++) {
           try {
             this.remotePublicKey = crypto.createPublicKey(rawKey);
-          } catch {}
+          } catch {
+            console.log(`[SockInit] Failed to create public key (attempt ${i})... trying again`);
+          }
         }
 
         // send encrypted packet
