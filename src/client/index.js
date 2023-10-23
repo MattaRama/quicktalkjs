@@ -3,6 +3,7 @@ const EncryptionManager = require('../encryption-manager');
 const { PASSPHRASE } = require('./constants.json');
 const rl = require('serverline');
 const { Client } = require('./client');
+const { ColorCoder } = require('../color');
 
 // argument parsing
 var host = '67.240.214.172',
@@ -76,7 +77,9 @@ client.start().then(() => {
           return;
         }
         
-        console.log(`${json['author']}: ${json['message']}`);
+        console.log(ColorCoder.convert(
+          `[%FG_GREEN%${json['author']}%RESET%] %FG_WHITE%${json['message']}%RESET%`
+        ));
         break;
     }
   });
