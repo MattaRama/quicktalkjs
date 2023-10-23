@@ -2,6 +2,10 @@ const { connect, Socket } = require('net');
 const { EventEmitter } = require('events');
 const EncryptionManager = require('../encryption-manager');
 
+/**
+ * @event Client#broadcastMessage
+ * @fires Client#broadcastMessage
+ */
 class Client extends EventEmitter {
   /** @type {ClientOptions} */
   options;
@@ -36,6 +40,29 @@ class Client extends EventEmitter {
           res(this);
         }
       });
+    });
+  }
+
+  async initEvents() {
+    return new Promise((res, rej) => {
+      this.socket.on('data', (data) => {
+        var json;
+        try {
+          json = JSON.parse(this.enc.decryptFromRemote(data).toString());
+        } catch {
+          console.log('[FAULT] Failed to parse JSON');
+          return;
+        }
+
+        if (json['type'] == null) {
+          console.log('[FAULT] Server provided no type with packet.');
+          return;
+        }
+
+        this.emit(json['type'], json);
+      });
+
+      res();
     });
   }
 
@@ -75,7 +102,6 @@ class Client extends EventEmitter {
             this.socket.write(this.enc.encryptToRemote(phrase));
             state++;
             break;
-
           case 5:
             var req = JSON.parse(this.enc.decryptFromRemote(buffer).toString());
             if (req['type'] === 'getUserID') {
@@ -96,7 +122,9 @@ class Client extends EventEmitter {
             var req = JSON.parse(this.enc.decryptFromRemote(buffer).toString());
             this.socket.removeAllListeners();
             if (req['type'] === 'ready') {
-              res(this);
+              this.initEvents().then(() => {
+                res(this);
+              });
             }
             break;
         }

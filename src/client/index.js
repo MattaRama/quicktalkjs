@@ -1,14 +1,16 @@
 const { argv, exit, stdout } = require('process');
 const EncryptionManager = require('../encryption-manager');
-const { PASSPHRASE } = require('./constants.json');
+const { PASSPHRASE, PATHS } = require('./constants.json');
 const rl = require('serverline');
 const { Client } = require('./client');
-const { ColorCoder } = require('../color');
+const { ColorCoder, ColorCodes } = require('../color');
+const fs = require('fs');
 
 // argument parsing
 var host = '67.240.214.172',
   port = 6978,
-  uID = 'user-' + Math.floor(Math.random() * 1000);
+  uID = 'user-' + Math.floor(Math.random() * 1000),
+  doNotClear = false;
 
 for (var i = 2; i < argv.length; i++) {
   switch (argv[i]) {
@@ -33,6 +35,11 @@ for (var i = 2; i < argv.length; i++) {
       case '--userid':
         uID = argv[++i];
         break;
+
+      case '--do-not-clear':
+      case '-dc':
+        doNotClear = true;
+        break;
   }
 }
 
@@ -50,37 +57,152 @@ var client = new Client({
   encryptionManager: encryptionMan
 });
 
+function initEventHandlers() {
+  /**
+   * CLIENT EVENT HANDLERS
+   */
+  // On message broadcast
+  client.on('broadcastMessage', (json) => {
+    if (json['author'] === uID) {
+      return;
+    }
+    
+    console.log(ColorCoder.convert(
+      `[%FG_GREEN%${json['author']}%RESET%] ${json['message']}`
+    ));
+  });
+
+  // On user connect
+  client.on('user.connect', (json) => {
+    console.log(ColorCoder.convert(
+      `[%FG_CYAN%SERVER%RESET%] User %FG_GREEN%${json.user}%RESET% connected.`
+    ));
+  });
+
+  // On user disconnect
+  client.on('user.disconnect', (json) => {
+    console.log(ColorCoder.convert(
+      `[%FG_CYAN%SERVER%RESET%] User %FG_GREEN%${json.user}%RESET% disconnected.`
+    ));
+  });
+
+  /**
+   * SOCKET EVENT HANDLERS
+   */
+  // On socket close
+  client.socket.on('close', (hadError) => {
+    console.log(ColorCoder.convert(
+      `[%FG_RED%FAULT%RESET%] Socket closed (was ${hadError ? '' : 'not'} a client error)`
+    ));
+  });
+}
+
+/**
+ * @typedef CommandHandler
+ * @prop {string} type
+ * @prop {boolean} disabled
+ * @prop {(client: Client, input: string[]) => {}} execute 
+ */
+/**
+ * @type {Object.<string, CommandHandler>}
+ */
+var commandHandlers;
+function initCommandHandlers() {
+  commandHandlers = [];
+
+  var commandHandlerNames = fs.readdirSync(PATHS.COMMAND_HANDLERS);
+  commandHandlerNames.forEach((val) => {
+    /**
+     * @type {CommandHandler}
+     */
+    const handler = require(`${PATHS.COMMAND_HANDLERS}${val}`);
+    if (handler.type == null || handler.execute == null) {
+      console.log(`[CommandHandler] Did not initialize "${val}"; missing fields.`);
+      return;
+    }
+    if (handler.disabled) {
+      console.log(`[CommandHandler] Did not initialize "${val}; disabled."`);
+      return;
+    }
+
+    commandHandlers[handler.type] = handler;
+  });
+}
+
+/**
+ * @param {string} input 
+ */
+function splitCommand(input) {
+  var split = [];
+  var buff = '';
+  var inQuote = false;
+  for (var i = 1; i < input.length; i++) {
+    if (input[i] === '"') {
+      inQuote = !inQuote;
+      if (!inQuote) {
+        split.push(buff);
+        buff = '';
+      }
+      continue;
+    } else if (input[i] === ' ') {
+      if (!inQuote) {
+        if (buff !== '') {
+          split.push(buff);
+          buff = '';
+        }
+        continue;
+      }
+    }
+
+    buff += input[i];
+  }
+
+  if (buff != '') {
+    split.push(buff);
+  }
+
+  return split;
+}
+
+/**
+ * @param {string} input 
+ */
+function onUserInput(input) {
+  if (input.startsWith('/')) {
+    var split = splitCommand(input);
+    if (commandHandlers[split[0]] == null) {
+      console.log(ColorCoder.convert(
+        `[%FG_CYAN%CLIENT%RESET%] Invalid command.`
+      ));
+      return;
+    }
+
+    commandHandlers[split[0]].execute(client, split)
+  } else {
+    client.broadcastMessage(input);
+  }
+}
+
 client.start().then(() => {
   console.log('Done.');
 
-  // start serverline and input mode
-  //stdout.write('\x1Bc');
+  // start serverline and user input mode
+  if (!doNotClear) {
+    console.log(ColorCodes.CLEAR);
+  }
+
   rl.init();
-  rl.setPrompt('> ');
+  rl.setPrompt(ColorCoder.convert(
+    `[%FG_GREEN%${uID} (you)%RESET%] `
+  ));
 
   rl.on('line', (data) => {
-    // TODO: broadcast message here
-    client.broadcastMessage(data.toString());
+    onUserInput(data.toString().trim());
   });
 
-  client.socket.on('data', (buf) => {
-    var json;
-    try {
-      json = JSON.parse(encryptionMan.decryptFromRemote(buf).toString());
-    } catch {
-      console.log('[FAULT] Failed to parse JSON');
-    }
+  // event handler initialization
+  initEventHandlers(client);
 
-    switch (json['type']) {
-      case 'broadcastMessage':
-        if (json['author'] === uID) {
-          return;
-        }
-        
-        console.log(ColorCoder.convert(
-          `[%FG_GREEN%${json['author']}%RESET%] %FG_WHITE%${json['message']}%RESET%`
-        ));
-        break;
-    }
-  });
-});
+  // command handler initialization
+  initCommandHandlers();
+})

@@ -59,9 +59,10 @@ const ColorCodes = {
   UNDERSCORE: '\x1b[4m',
   BLINK: '\x1b[5m',
   REVERSE: '\x1b[7m',
-  HIDDEN: '\x1b[8m'
+  HIDDEN: '\x1b[8m',
+  CLEAR: '\x1Bc'
 };
 
-console.log(ColorCoder.convert('[%FG_GREEN%Matt%RESET%] %FG_WHITE%testing text%RESET%'));
+//console.log(ColorCoder.convert('[%FG_GREEN%Matt%RESET%] %FG_WHITE%testing text%RESET%'));
 
 module.exports = { ColorCoder, ColorCodes };

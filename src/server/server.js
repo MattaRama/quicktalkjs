@@ -95,6 +95,10 @@ class Server {
     });
 
     console.log(`JOINED ${user.userID}; len: ${Object.keys(this.users).length}`);
+    this.broadcast(JSON.stringify({
+      type: 'user.connect',
+      user: user.userID
+    }));
   }
 
   /**
@@ -103,6 +107,10 @@ class Server {
   killUser(user) {
     delete this.users[user.userID];
     console.log(`KILLED ${user.userID}; len: ${Object.keys(this.users).length}`);
+    this.broadcast(JSON.stringify({
+      type: 'user.disconnect',
+      user: user.userID
+    }));
   }
 
   /**

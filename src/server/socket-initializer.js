@@ -133,16 +133,17 @@ class SocketInitializer {
         // userID is good, allow connection
         this.socket.removeAllListeners();
 
-        this.server.setupNewUser(new User(
-          this.socket,
-          this.userID,
-          this.encryptionManager
-        ));
-
+        
         this.socket.write(this.encryptionManager.encryptToRemote(JSON.stringify({
           'type': 'ready',
           'userID': this.userID
         })));
+        
+        this.server.setupNewUser(new User(
+          this.socket,
+          this.userID,
+          this.encryptionManager
+          ));
         break;
     }  
   }
