@@ -1,10 +1,11 @@
 const { argv, exit, stdout } = require('process');
 const EncryptionManager = require('../encryption-manager');
-const { PASSPHRASE, PATHS } = require('./constants.json');
+const { PASSPHRASE } = require('./constants.json');
 const rl = require('serverline');
 const { Client } = require('./client');
 const { ColorCoder, ColorCodes } = require('../color');
 const fs = require('fs');
+const path = require('path');
 
 // argument parsing
 var host = '67.240.214.172',
@@ -110,12 +111,15 @@ var commandHandlers;
 function initCommandHandlers() {
   commandHandlers = [];
 
-  var commandHandlerNames = fs.readdirSync(PATHS.COMMAND_HANDLERS);
+  // TODO: there should be a better solution to pathing
+  var commandHandlerPath = path.join(require.main.path, 'command-handlers');
+
+  var commandHandlerNames = fs.readdirSync(commandHandlerPath);
   commandHandlerNames.forEach((val) => {
     /**
      * @type {CommandHandler}
      */
-    const handler = require(`${PATHS.COMMAND_HANDLERS}${val}`);
+    const handler = require(path.join(commandHandlerPath, val));
     if (handler.type == null || handler.execute == null) {
       console.log(`[CommandHandler] Did not initialize "${val}"; missing fields.`);
       return;

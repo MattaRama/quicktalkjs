@@ -49,7 +49,7 @@ class EncryptionManager {
    */
   encryptToRemote(data) {
     const buff = Buffer.from(data);
-    return crypto.publicEncrypt(this._remotePublic, data);
+    return crypto.publicEncrypt(this._remotePublic, buff);
   }
 
   /**

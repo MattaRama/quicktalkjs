@@ -1,6 +1,3 @@
 {
-  "PASSPHRASE": "QuickTalkJS.Client",
-  "PATHS": {
-    "COMMAND_HANDLERS": "/home/matt/repos/quicktalkjs/src/client/command-handlers/"
-  }
+  "PASSPHRASE": "QuickTalkJS.Client"
 }

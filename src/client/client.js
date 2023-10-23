@@ -99,6 +99,7 @@ class Client extends EventEmitter {
           case 3:
             // get verification phrase
             var phrase = this.enc.decryptFromRemote(buffer).toString();
+            console.log(`phrase: ${phrase}`);
             this.socket.write(this.enc.encryptToRemote(phrase));
             state++;
             break;
