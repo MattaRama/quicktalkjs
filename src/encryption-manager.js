@@ -51,9 +51,8 @@ class EncryptionManager {
     const buff = Buffer.from(data);
     return crypto.publicEncrypt({
       key: this._remotePublic,
-      buffer: buff,
       padding: 0
-    });
+    }, buff);
     //return crypto.publicEncrypt(this._remotePublic, buff);
   }
 
