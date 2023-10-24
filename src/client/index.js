@@ -87,6 +87,13 @@ function initEventHandlers() {
     ));
   });
 
+  // On whisper
+  client.on('whisper', (json) => {
+    console.log(ColorCoder.convert(
+      `[%FG_GREEN%${json.from}%RESET% %BRIGHT%(whisper)%RESET%] ${json.message}`
+    ));
+  });
+
   /**
    * SOCKET EVENT HANDLERS
    */

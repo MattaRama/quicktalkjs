@@ -213,7 +213,15 @@ class Client extends EventEmitter {
   }
 
   async whisper(userID, content) {
-    return new Promise((res, rej) => {});
+    return new Promise((res, rej) => {
+      this.sendData({
+        type: 'whisper',
+        user: userID,
+        message: content
+      })
+        .then(() => res())
+        .catch(() => rej());
+    });
   }
 
   async broadcastMessage(rawText) {

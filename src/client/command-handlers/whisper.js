@@ -11,7 +11,7 @@ module.exports = {
    * @param {string[]} input 
    */
   async execute(client, input) {
-    if (input.length !== 2) {
+    if (input.length !== 3) {
         console.log(ColorCoder.convert(
             `[%FG_CYAN%CLIENT%RESET%] Failed to send whisper: invalid argument length`
         ));

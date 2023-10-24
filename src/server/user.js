@@ -18,7 +18,11 @@ class User {
   /** @param {string} str */
   encryptedWrite(str) {
     console.log(str);
-    this.socket.write(this.encryptionManager.encryptToRemote(str));
+    try {
+      this.socket.write(this.encryptionManager.encryptToRemote(str));
+    } catch {
+      console.log(`[FAULT] failed to encryptedWrite on user ${this.userID}`);
+    }
   }
 }
 
