@@ -91,7 +91,9 @@ class Server {
       if (!user.socket.closed) {
         user.socket.end();
       }
-      this.killUser(user)
+      if (this.users[user.userID] != null) {
+        this.killUser(user)
+      }
     });
 
     console.log(`JOINED ${user.userID}; len: ${Object.keys(this.users).length}`);

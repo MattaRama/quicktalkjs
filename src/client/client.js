@@ -15,6 +15,9 @@ class Client extends EventEmitter {
   /** @type {EncryptionManager} */
   enc;
 
+  /** @type {number[]} */
+  reqIdsInUse = [];
+
   /**
    * @typedef {Object} ClientOptions
    * @property {number} port
@@ -149,6 +152,61 @@ class Client extends EventEmitter {
       } catch (e) {
         rej(e);
       }
+    });
+  }
+
+  /**
+   * Sends a packet with a unique ID and gets the response
+   * @param {any} jsonData
+   */
+  async getResponseByID(jsonData) {
+    return new Promise((res, rej) => {
+      if (jsonData?.type == null) {
+        rej('No type or data provided.');
+      }
+
+      // generate unique ID
+      var id;
+      do {
+        id = Math.floor(Math.random() * 1000000);
+      } while (this.reqIdsInUse.includes(id));
+
+      // tag ID on to message
+      jsonData['SENDER_ID'] = id;
+      this.reqIdsInUse.push(id);
+
+      // setup res handler
+      const handler = (json) => {
+        if (json?.recv != null && json.recv?.SENDER_ID != null && json.recv.SENDER_ID == id) {
+          this.removeListener(jsonData.type, handler);
+          
+          // remove req from array
+          for (var i = 0; i < this.reqIdsInUse.length; i++) {
+            if (this.reqIdsInUse[i] === id) {
+              this.reqIdsInUse.splice(i);
+              break;
+            }
+          }
+
+          res(json);
+        }
+      };
+      this.on(jsonData.type, handler);
+
+      // send request
+      this.sendData(jsonData);
+    });
+  }
+
+  async getUsers() {
+    return new Promise((res, rej) => {
+      this.getResponseByID({
+        type: 'getUsers'
+      }).then((data) => {
+        res(data.users);
+      }).catch((err) => {
+        rej(err);
+      });
     });
   }
 
