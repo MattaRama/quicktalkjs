@@ -120,7 +120,12 @@ class Server {
    * @param {User} user 
    */
   async packetHandler(buffer, user) {
-    var decrypt = user.encryptionManager.decryptFromRemote(buffer).toString();
+    var decrypt;
+    try {
+      decrypt = user.encryptionManager.decryptFromRemote(buffer).toString();
+    } catch {
+      console.log(`[FAULT] Failed to decrypt packet sent by ${user.userID}`);
+    }
     console.log(`${user.userID}: ${decrypt}`);
 
     // parse json
