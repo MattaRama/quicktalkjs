@@ -1,6 +1,7 @@
 const { connect, Socket } = require('net');
 const { EventEmitter } = require('events');
 const EncryptionManager = require('../encryption-manager');
+const { ColorCoder } = require('../color');
 
 class Client extends EventEmitter {
   /** @type {ClientOptions} */
@@ -49,12 +50,16 @@ class Client extends EventEmitter {
         try {
           json = JSON.parse(this.enc.decryptFromRemote(data).toString());
         } catch {
-          console.log('[FAULT] Failed to parse JSON');
+          console.log(ColorCoder.convert('[%FG_RED%FAULT%RESET%] Failed to parse JSON'));
           return;
         }
 
+        this.emit('data', json);
+
         if (json['type'] == null) {
-          console.log('[FAULT] Server provided no type with packet.');
+          console.log(ColorCoder.convert(
+            '[%FG_RED%FAULT%RESET%] Server provided no type with packet.'
+          ));
           return;
         }
 
@@ -186,10 +191,12 @@ class Client extends EventEmitter {
           res(json);
         }
       };
-      this.on(jsonData.type, handler);
+      this.on('data', handler);
 
       // send request
-      this.sendData(jsonData);
+      this.sendData(jsonData).catch((err) => {
+        rej(err);
+      });
     });
   }
 
@@ -203,6 +210,10 @@ class Client extends EventEmitter {
         rej(err);
       });
     });
+  }
+
+  async whisper(userID, content) {
+    return new Promise((res, rej) => {});
   }
 
   async broadcastMessage(rawText) {
