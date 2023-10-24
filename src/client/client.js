@@ -2,10 +2,6 @@ const { connect, Socket } = require('net');
 const { EventEmitter } = require('events');
 const EncryptionManager = require('../encryption-manager');
 
-/**
- * @event Client#broadcastMessage
- * @fires Client#broadcastMessage
- */
 class Client extends EventEmitter {
   /** @type {ClientOptions} */
   options;
@@ -102,7 +98,6 @@ class Client extends EventEmitter {
           case 3:
             // get verification phrase
             var phrase = this.enc.decryptFromRemote(buffer).toString();
-            console.log(`phrase: ${phrase}`);
             this.socket.write(this.enc.encryptToRemote(phrase));
             state++;
             break;
@@ -218,7 +213,7 @@ class Client extends EventEmitter {
         message: rawText
       })
         .then(() => res())
-        .catch(() => rej());
+        .catch((err) => rej(err));
     });
   }
 }

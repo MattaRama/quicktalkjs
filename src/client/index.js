@@ -183,7 +183,11 @@ function onUserInput(input) {
 
     commandHandlers[split[0]].execute(client, split)
   } else {
-    client.broadcastMessage(input);
+    client.broadcastMessage(input).catch((err) => {
+      console.log(ColorCoder.convert(
+        `[%FG_RED%FAULT%RESET%] Failed to send message: ${err}`
+      ));
+    });
   }
 }
 

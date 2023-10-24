@@ -85,8 +85,6 @@ class Server {
     this.users[user.userID] = user;
 
     // setup listeners
-    user.socket.on('data', async (buffer) => this.packetHandler(buffer, user));
-    user.socket.on('end', () => this.killUser(user));
     user.socket.on('error', () => {
       if (!user.socket.closed) {
         user.socket.end();
@@ -95,6 +93,8 @@ class Server {
         this.killUser(user)
       }
     });
+    user.socket.on('data', async (buffer) => this.packetHandler(buffer, user));
+    user.socket.on('end', () => this.killUser(user));
 
     console.log(`JOINED ${user.userID}; len: ${Object.keys(this.users).length}`);
     this.broadcast(JSON.stringify({

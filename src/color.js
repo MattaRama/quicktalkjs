@@ -63,6 +63,4 @@ const ColorCodes = {
   CLEAR: '\x1Bc'
 };
 
-//console.log(ColorCoder.convert('[%FG_GREEN%Matt%RESET%] %FG_WHITE%testing text%RESET%'));
-
 module.exports = { ColorCoder, ColorCodes };

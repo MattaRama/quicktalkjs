@@ -49,7 +49,12 @@ class EncryptionManager {
    */
   encryptToRemote(data) {
     const buff = Buffer.from(data);
-    return crypto.publicEncrypt(this._remotePublic, buff);
+    return crypto.publicEncrypt({
+      key: this._remotePublic,
+      buffer: buff,
+      padding: 0
+    });
+    //return crypto.publicEncrypt(this._remotePublic, buff);
   }
 
   /**
@@ -59,7 +64,11 @@ class EncryptionManager {
     if (this._private == null) {
       throw new Error('No remote public declared.');
     }
-    return crypto.privateDecrypt(this._private, data);
+    return crypto.privateDecrypt({
+      key: this._private,
+      padding: 0
+    }, data);
+    //return crypto.privateDecrypt(this._private, data);
   }
 
   getLocalPublic() {
