@@ -11,10 +11,16 @@ module.exports = {
    * @param {string[]} input 
    */
   async execute(client, input) {
-    client.getUsers().then((val) => {
+    client.getUsers()
+      .then((val) => {
         console.log(ColorCoder.convert(
             `[%FG_CYAN%SERVER%RESET%] USERS: %BRIGHT%${val.join(', ')}%RESET%`
         ))
-    });
+      })
+      .catch((err) => {
+        console.log(ColorCoder.convert(
+          `[%FG_RED%FAULT%RESET%] Failed to fetch users: ${err}`
+        ));
+      });
   }
 };

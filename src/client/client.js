@@ -177,8 +177,8 @@ class Client extends EventEmitter {
 
       // setup res handler
       const handler = (json) => {
-        if (json?.recv != null && json.recv?.SENDER_ID != null && json.recv.SENDER_ID == id) {
-          this.removeListener(jsonData.type, handler);
+        if (json?.recv?.SENDER_ID != null && json.recv.SENDER_ID == id) {
+          this.removeListener('data', handler);
           
           // remove req from array
           for (var i = 0; i < this.reqIdsInUse.length; i++) {
@@ -214,13 +214,17 @@ class Client extends EventEmitter {
 
   async whisper(userID, content) {
     return new Promise((res, rej) => {
-      this.sendData({
+      this.getResponseByID({
         type: 'whisper',
         user: userID,
         message: content
       })
-        .then(() => res())
-        .catch(() => rej());
+        .then((response) => {
+          if (response['type'] !== 'whisper.ok') {
+            rej(response['type']);
+          }
+        })
+        .catch((err) => rej(err));
     });
   }
 

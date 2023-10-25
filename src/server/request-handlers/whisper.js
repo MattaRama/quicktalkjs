@@ -36,11 +36,17 @@ module.exports = {
         return;
     }
 
-    // send data to user
+    // send whisper to recipient
     server.users[json['user']].encryptedWrite(JSON.stringify({
         type: 'whisper',
         from: user.userID,
         message: json['message'].trim()
+    }));
+
+    // send confirmation to sender
+    user.encryptedWrite(JSON.stringify({
+        type: 'whisper.ok',
+        recv: json
     }));
   }
 };
