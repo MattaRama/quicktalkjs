@@ -222,6 +222,8 @@ class Client extends EventEmitter {
         .then((response) => {
           if (response['type'] !== 'whisper.ok') {
             rej(response['type']);
+          } else {
+            res();
           }
         })
         .catch((err) => rej(err));

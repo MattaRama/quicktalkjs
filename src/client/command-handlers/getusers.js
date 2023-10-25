@@ -15,7 +15,7 @@ module.exports = {
       .then((val) => {
         console.log(ColorCoder.convert(
             `[%FG_CYAN%SERVER%RESET%] USERS: %BRIGHT%${val.join(', ')}%RESET%`
-        ))
+        ));
       })
       .catch((err) => {
         console.log(ColorCoder.convert(
