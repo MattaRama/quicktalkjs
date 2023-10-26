@@ -37,6 +37,18 @@ class SocketInitializer {
       this.onData(buffer);
     });
 
+    // edge case initialization handling
+    socket.on('error', (buffer) => {
+      console.log(`Connection Error: ${buffer}. Closing socket.`);
+      if (!socket.closed) {
+        socket.end()
+      }
+    });
+
+    socket.on('end', () => {
+      console.log(`Premature socket close during initialization.`);
+    });
+
     socket.write(server.options.encryptionManager.getLocalPublicRaw());
     this.state++;
   }
